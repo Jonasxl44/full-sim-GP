@@ -102,6 +102,17 @@ document.querySelectorAll('.view-btn').forEach(b=>b.addEventListener('click',()=
 document.querySelectorAll('.session-option').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;document.querySelectorAll('.session-option').forEach(x=>x.classList.toggle('selected',x===b));$('#session-name').textContent=mode.toUpperCase();}));
 window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(e.repeat)return;if(e.key==='1')chooseView('tcam');if(e.key==='2')chooseView('tv');if(e.key==='3')chooseView('cockpit');if(e.key.toLowerCase()==='p'||e.key==='Escape')togglePause();if(e.key.toLowerCase()==='r'&&running)resetSession();});
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+// Mobile touch controls: hold a button to keep applying that input.
+document.querySelectorAll('.touch-btn').forEach(btn=>{
+ const key=btn.dataset.key;
+ const press=e=>{e.preventDefault();keys[key]=true;btn.classList.add('pressed');try{btn.setPointerCapture(e.pointerId);}catch{}};
+ const release=e=>{e.preventDefault();keys[key]=false;btn.classList.remove('pressed');};
+ btn.addEventListener('pointerdown',press);
+ btn.addEventListener('pointerup',release);
+ btn.addEventListener('pointercancel',release);
+ btn.addEventListener('lostpointercapture',()=>{keys[key]=false;btn.classList.remove('pressed');});
+});
+
 function togglePause(){if(!running||finished)return;paused=!paused;$('#pause-screen').classList.toggle('hidden',!paused);}
 $('#pause-btn').addEventListener('click',togglePause);$('#resume-btn').addEventListener('click',togglePause);$('#restart-btn').addEventListener('click',resetSession);$('#again-btn').addEventListener('click',()=>{$('#finish-screen').classList.add('hidden');$('#start-screen').classList.remove('hidden');resetSession(false);});
 function resetSession(showMenu=true){speed=0;steer=0;gear=1;rpm=1200;elapsed=0;lap=1;lapStart=0;lastLap=null;finished=false;running=false;paused=false;placeCarAt(player,.015,0);aiCars.forEach((c,i)=>{c.userData.aiProgress=(i+1)*.013;c.userData.aiSpeed=31-i*1.5;placeCarAt(c,c.userData.aiProgress,(i%2===0?1:-1)*3);});$('#pause-screen').classList.add('hidden');$('#finish-screen').classList.add('hidden');$('#last-lap').textContent='--:--.---';$('#session-lap').textContent='LAP 1 / 5';$('#race-state').textContent='READY';if(showMenu)$('#start-screen').classList.remove('hidden');}
